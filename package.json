@@ -1,7 +1,7 @@
 {
   "name": "yt-channel-videos",
-  "version": "1.0.0",
-  "description": "Retrieve snippet data for all of a channel's videos",
+  "version": "1.1.0",
+  "description": "Retrieve snippet data for YouTube channel uploads",
   "main": "index.js",
   "scripts": {
     "test": "mocha index.test.js",
@@ -15,6 +15,7 @@
     "YouTube",
     "channel",
     "vidoes",
+    "uploads",
     "snippet"
   ],
   "author": "Jeffrey Crocker <crockagile@gmail.com> (http://crockagile.com)",
@@ -28,7 +29,6 @@
   },
   "devDependencies": {
     "chai": "3.2.0",
-    "chai-as-promised": "5.1.0",
     "mocha": "2.3.0",
     "mochai": "0.2.5"
   }
