@@ -1,0 +1,34 @@
+{
+  "name": "yt-channel-videos",
+  "version": "1.0.0",
+  "description": "Retrieve snippet data for all of a channel's videos",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha index.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CrockAgile/yt-channel-videos"
+  },
+  "keywords": [
+    "YouTube",
+    "channel",
+    "vidoes",
+    "snippet"
+  ],
+  "author": "Jeffrey Crocker <crockagile@gmail.com> (http://crockagile.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CrockAgile/yt-channel-videos/issues"
+  },
+  "homepage": "https://github.com/CrockAgile/yt-channel-videos#readme",
+  "dependencies": {
+    "googleapis": "2.1.3"
+  },
+  "devDependencies": {
+    "chai": "3.2.0",
+    "chai-as-promised": "5.1.0",
+    "mocha": "2.3.0",
+    "mochai": "0.2.5"
+  }
+}
