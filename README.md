@@ -1,4 +1,6 @@
-# yt-channel-videos
+[![Build Status](https://travis-ci.org/CrockAgile/yt-channel-videos.svg?branch=master)](https://travis-ci.org/CrockAgile/yt-channel-videos)
+
+# yt-channel-videos 
 Retrieve snippet data for all of a channel's videos
 
 ## Install
