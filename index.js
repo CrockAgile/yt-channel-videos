@@ -13,10 +13,12 @@ module.exports = channelVideos;
 function channelVideos(key) {
   if (!key) throw new Error('Please initialize with a YouTube API key');
   return {
-    channelPlaylistId: channelPlaylistId,
+    uploadsId: uploadsId,
     playlistPage: playlistPage,
-    allPlaylistPages: allPlaylistPages,
-    allUploads: allUploads
+    pagesUntil: pagesUntil,
+    allUploads: allUploads,
+    uploadsAfterDate: uploadsAfterDate,
+    uploadsAfterVideo: uploadsAfterVideo
   };
 
 
@@ -26,7 +28,7 @@ function channelVideos(key) {
    * @param {String} channel
    * @return {Promise} Promise for playlistId
    */
-  function channelPlaylistId(channel) {
+  function uploadsId(channel) {
     return new Promise(function(resolve, reject) {
       var options = {
         part: 'contentDetails',
@@ -56,7 +58,7 @@ function channelVideos(key) {
       playlistId: playlistId,
       auth: key
     };
-    if (max) {
+    if (max < 50) {
       options.maxResults = max;
     }
     else {
@@ -77,46 +79,115 @@ function channelVideos(key) {
   }
 
 
-  /*
-   * Make Promise for all video snippets from given playlist
+  /* Make promise for all pages until some condition is met
    *
    * @param {String} playlistId
-   * @return {Promise} Promise for object of all video snippets
+   * @param {Function} condition
+   * @return {Promise} Promise for object of all video snippets before condition
    */
-  function allPlaylistPages(playlistId) {
+  function pagesUntil(playlistId, condition) {
+    var emitter = new EventEmitter();
+    var resultPages = {
+      videoCount: 0,
+      pageCount: 0,
+      items: []
+    };
     return new Promise(function(resolve, reject) {
-      var emitter = new EventEmitter();
-      var allPages = {
-        videoCount: 0,
-        pageCount: 0,
-        items: []
-      };
-      emitter.on('nextPage', function(token) {
-        playlistPage(playlistId,token).then(function(res) {
-          allPages.pageCount++;
-          allPages.videoCount += res.items.length;
-          allPages.items = allPages.items.concat(res.items);
-          if (res.pageToken) {
-            emitter.emit('nextPage', res.pageToken);
-          }
-          else {
-            resolve(allPages);
-          }
-        }).catch(function(err) { reject(err); });
+      emitter.on('complete', function() {
+        resolve(resultPages);
       });
-      emitter.emit('nextPage');
+      emitter.on('continue', function(pageToken) {
+        playlistPage(playlistId,pageToken).then(function(res) {
+          resultPages.pageCount++;
+          resultPages.videoCount += res.items.length;
+          resultPages.items = resultPages.items.concat(res.items);
+          if (condition(res)) return emitter.emit('complete');
+          emitter.emit('continue', res.pageToken);
+        }).catch(function(err) {
+          reject(err);
+        });
+      });
+      emitter.emit('continue');
     });
   }
 
+
+  /* Make promise for all uploads on given YouTube channel
+   *
+   * @param {String} channel
+   * @return {Promise} Promise for object of all uploads
+   */
   function allUploads(channel) {
-    return new Promise(function(resolve, reject) {
-      channelPlaylistId(channel)
-      .then(function(res) {
-        return allPlaylistPages(res);
+    return new Promise(function (resolve, reject) {
+      uploadsId(channel)
+      .then(function(playlistId) {
+        return pagesUntil(playlistId, function(page) {
+          return !page.pageToken;
+        });
       }).then(function(res) {
         resolve(res);
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  }
+
+
+  /* Make promise for all uploads after a given date
+   *
+   * @param {String} channel
+   * @param {Date} date
+   * @return {Promise} Promise for object of uploads after date on channel
+   */
+  function uploadsAfterDate(channel, date) {
+    return new Promise(function (resolve, reject) {
+      uploadsId(channel)
+      .then(function(playlistId) {
+        return pagesUntil(playlistId, function(page) {
+          return page.items.some(function(item) {
+            var itemDate = new Date(item.snippet.publishedAt);
+            return itemDate < date;
+          });
+        });
+      }).then(function(res) {
+        res.items = res.items.filter(function(item) {
+          var itemDate = new Date(item.snippet.publishedAt);
+          return itemDate > date;
+        });
+        resolve(res);
+      }).catch(function(err) {
+        reject(err);
+      });
+    });
+  }
+
+
+  /* Make promise for all uploads after a given videoId
+   *
+   * @param {String} channel
+   * @param {String} videoId
+   * @return {Promise} Promise for object of uploads after video
+   */
+  function uploadsAfterVideo(channel, videoId) {
+    return new Promise(function (resolve, reject) {
+      uploadsId(channel)
+      .then(function(playlistId) {
+        return pagesUntil(playlistId, function(page) {
+          return page.items.some(function(item) {
+            return item.snippet.resourceId.videoId === videoId;
+          });
+        });
+      }).then(function(res) {
+        for(var i=0; i<res.items.length; i++) {
+          if (res.items[i].snippet.resourceId.videoId === videoId) {
+            res.items = res.items.slice(0,i);
+            resolve(res);
+          }
+        }
+        resolve(res);
+      }).catch(function(err) {
+        reject(err);
       });
     });
   }
 }
-
