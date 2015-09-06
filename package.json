@@ -4,7 +4,8 @@
   "description": "Retrieve snippet data for all of a channel's videos",
   "main": "index.js",
   "scripts": {
-    "test": "mocha index.test.js"
+    "test": "mocha index.test.js",
+    "watch": "mocha index.test.js -w"
   },
   "repository": {
     "type": "git",

@@ -24,7 +24,7 @@ describe('yt-channel-videos', function() {
   describe('channelVidsPlaylistId', function() {
     var playlistPromise;
     beforeEach(function() {
-      playlistPromise = channelVids(config.key).channelPlaylistId('PurgeGamers');
+      playlistPromise = channelVids(config.key).channelPlaylistId('xpantherx');
     });
     it('should be a Promise', function() {
       expect(playlistPromise).to.be.instanceof(Promise);
@@ -34,10 +34,17 @@ describe('yt-channel-videos', function() {
         assert.isString(res);
       });
     });
+    it('should error if no such channel', function() {
+      var invalidChannel = channelVids(config.key).channelPlaylistId('!@#$%');
+      return invalidChannel.catch(function(err) {
+        expect(err).to.be.instanceof(Error);
+      });
+    });
   });
 
   describe('playlistPage', function() {
-    var playlistId = 'UUZsM8MOy0VC9blj_wBkbo-g'; // purgegamers uploads
+    //var playlistId = 'UUZsM8MOy0VC9blj_wBkbo-g'; // purgegamers uploads
+    var playlistId = 'UUr5F2ScU7YbLnDRHw0-KtSQ'; // xpantherx uploads
     var chan = channelVids(config.key);
     var pagePromise;
     beforeEach(function() {
@@ -60,7 +67,8 @@ describe('yt-channel-videos', function() {
   });
 
   describe('allPlaylistPages', function() {
-    var playlistId = 'UUZsM8MOy0VC9blj_wBkbo-g'; // purgegamers uploads
+    //var playlistId = 'UUZsM8MOy0VC9blj_wBkbo-g'; // purgegamers uploads
+    var playlistId = 'UUr5F2ScU7YbLnDRHw0-KtSQ'; // xpantherx uploads
     var chan = channelVids(config.key);
     var allPagePromise;
     beforeEach(function() {
@@ -73,7 +81,23 @@ describe('yt-channel-videos', function() {
       this.timeout(60000);
       return allPagePromise.then(function(res) {
         expect(res).to.have.property('pageCount');
-        expect(res.videoCount).to.be.closeTo(res.pageCount * 50, 200);
+        expect(res.videoCount).to.be.closeTo(res.pageCount * 50, 50);
+      });
+    });
+  });
+
+  describe('allUplods', function() {
+    var uploadsPromise;
+    beforeEach(function() {
+      uploadsPromise = channelVids(config.key).allUploads('xpantherx');
+    });
+    it('should return all uploads', function() {
+      this.timeout(30000);
+      return uploadsPromise.then(function(res) {
+        expect(res).to.have.property('pageCount');
+        expect(res).to.have.property('videoCount');
+        expect(res).to.have.property('items');
+        expect(res.videoCount).to.be.closeTo(res.pageCount*50, 50);
       });
     });
   });

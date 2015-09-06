@@ -15,7 +15,8 @@ function channelVideos(key) {
   return {
     channelPlaylistId: channelPlaylistId,
     playlistPage: playlistPage,
-    allPlaylistPages: allPlaylistPages
+    allPlaylistPages: allPlaylistPages,
+    allUploads: allUploads
   };
 
 
@@ -34,6 +35,7 @@ function channelVideos(key) {
       };
       yt.channels.list(options,function(err, data) {
         if (err) reject(err);
+        if (data.items.length === 0) return reject(Error('Channel has no uploads'));
         resolve(data.items[0].contentDetails.relatedPlaylists.uploads);
       });
     });
@@ -103,6 +105,17 @@ function channelVideos(key) {
         }).catch(function(err) { reject(err); });
       });
       emitter.emit('nextPage');
+    });
+  }
+
+  function allUploads(channel) {
+    return new Promise(function(resolve, reject) {
+      channelPlaylistId(channel)
+      .then(function(res) {
+        return allPlaylistPages(res);
+      }).then(function(res) {
+        resolve(res);
+      });
     });
   }
 }
