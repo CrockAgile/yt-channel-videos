@@ -76,7 +76,21 @@ describe('yt-channel-videos', function() {
         expect(res).to.have.property('pageCount');
         expect(res).to.have.property('videoCount');
         expect(res).to.have.property('items');
-        expect(res.videoCount).to.be.closeTo(res.pageCount * 50, 50);
+        expect(res.videoCount).to.be.closeTo(res.pageCount * 50, 51);
+      });
+    });
+  });
+
+  describe('allUploads', function() {
+    var allUploadsPromise = chan.allUploads('xpantherx', 1);
+    it('should be a Promise', function() {
+      expect(allUploadsPromise).to.be.instanceof(Promise);
+    });
+    it('should resolve to a page object with a single video', function() {
+      return allUploadsPromise.then(function(res) {
+        expect(res).to.have.property('pageToken');
+        expect(res).to.have.property('items');
+        expect(res.items).to.have.lengthOf(1);
       });
     });
   });

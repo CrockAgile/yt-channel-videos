@@ -112,18 +112,26 @@ function channelVideos(key) {
   }
 
 
-  /* Make promise for all uploads on given YouTube channel
+  /* Make promise for all uploads (up to an optional limit) on given YouTube channel
    *
    * @param {String} channel
+   * @param {Number} limit (optional)
    * @return {Promise} Promise for object of all uploads
    */
-  function allUploads(channel) {
+  function allUploads(channel, limit) {
     return new Promise(function (resolve, reject) {
       uploadsId(channel)
       .then(function(playlistId) {
-        return pagesUntil(playlistId, function(page) {
-          return !page.pageToken;
-        });
+        if(limit){
+          return playlistPage(playlistId, false, limit,  function(page) {
+            return !page.pageToken;
+          });
+        }
+        else {
+          return pagesUntil(playlistId, function(page) {
+            return !page.pageToken;
+          });
+        }
       }).then(function(res) {
         resolve(res);
       }).catch(function(err) {
